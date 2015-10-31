@@ -161,68 +161,7 @@ template <size_t K, class KeyType, class ValType>
 typename kdtree<K,KeyType,ValType>::iterator
 	kdtree<K,KeyType,ValType>::nearest_neighbour(const vector<KeyType>& test_point, ValType val) const
 {
-	if(test_point.size() != K) 	throw invalid_dimension();
-	if(root == NULL) 			throw empty_tree();
-	if(root->is_leaf()) 		return iterator{root};
-
-	const node& query{0, test_point, val};
-
-	KeyType best_d;
-	node* guess = NULL;
-
-	std::stack<node*> s;
-	s.push(root);
-	node* curr = NULL;
-	//direct dual of recursive implementation:
-	//bottom - up
-	enum {calling, unwinding} state = calling;
-	while(!s.empty())
-	{
-		if(state == calling)
-		{
-			curr=s.top();
-			if (curr == NULL)
-			{
-				//found query point's place in tree
-				s.pop();
-				state = unwinding;
-				continue;
-			}
-			if(query < (*curr) )
-				s.push(curr->left);
-			else
-				s.push(curr->right);
-		}
-
-		if (state == unwinding)
-		{
-			curr=s.top();
-			s.pop();
-
-			if(curr == NULL) continue;
-			if(curr->val == query.val) continue;
-
-			auto sq_d = sq_distance(query, *curr);
-			if (sq_d < best_d ){
-				guess=curr;
-				best_d=sq_d;
-			}
-			auto hyper_rad = curr->key[curr->split_index]-query.key[curr->split_index];
-			if ( hyper_rad * hyper_rad < best_d)
-			{
-
-				if(query < *curr )
-					s.push(curr->right);
-				else
-					s.push(curr->left);
-
-				state=calling;
-			}
-		}
-	}
-
-
-	return iterator{guess};
+	return n_nearest_neighbour(1, test_point, val)[0];
 }
 
 
