@@ -29,7 +29,7 @@ using p		= pair<c, string>;
 int main() {
 
 	try{
-		
+
 
 		cout<<"TEST with large data\n ********************* \n";
 		kdtree<3, double, string> test_bal, test_unbal;
@@ -40,7 +40,7 @@ int main() {
 					test.push_back(p{c{i,j,k}, ""});
 		cout << test.size() <<" POINTS GENERATED\n";
 
-		t=clock();
+		auto t=clock();
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		shuffle (test.begin(), test.end(), std::default_random_engine(seed));
 		cout << "Shuffled them in " << clock() - t << "miliseconds \n";
@@ -52,7 +52,7 @@ int main() {
 		}*/
 
 		t = clock();
-		PS = presort(test);
+		auto PS = presort(test);
 		cout << "Sorting finished in " << clock() - t << " miliseconds\n";
 
 		t = clock();
@@ -72,7 +72,7 @@ int main() {
 		//test_bal.print();
 		cout<<" **************************************\n";
 
-		
+
 
 	}
 
