@@ -76,8 +76,6 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 	if(split%3 == 0){
 		if(x.size() > 3){
 			median = x[x.size()/2];
-			left_x = vector<p*>(x.begin(), x.end()-x.size()/2-1);
-			right_x = vector<p*>(x.end()-x.size()/2+1, x.end());
 		} else if(x.size() > 2) {
 			KDT.insert(x[1]->first, x[1]->second);
 			KDT.insert(x[0]->first, x[0]->second);
@@ -92,7 +90,14 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 			return;
 		}
 
-
+        for(auto i : x)
+		{
+			if (i->first == median->first) continue;
+			if (i->first[split%3] < median->first[split%3])
+				left_x.push_back(i);
+			else
+				right_x.push_back(i);
+		}
 		for(auto i : y)
 		{
 			if (i->first == median->first) continue;
@@ -111,12 +116,8 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 		}
 
 	} else if (split%3 == 1){
-		median = y[y.size()/2];
-
 		if(y.size() > 3){
 			median = y[y.size()/2];
-			left_y = vector<p*>(y.begin(), y.end()-y.size()/2-1);
-			right_y = vector<p*>(y.end()-y.size()/2+1, y.end());
 		} else if(y.size() > 2) {
 			KDT.insert(y[1]->first, y[1]->second);
 			KDT.insert(y[0]->first, y[0]->second);
@@ -131,6 +132,14 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 			return;
 		}
 
+        for(auto i : y)
+		{
+			if (i->first == median->first) continue;
+			if (i->first[split%3] < median->first[split%3])
+				left_y.push_back(i);
+			else
+				right_y.push_back(i);
+		}
 		for(auto i : x)
 		{
 			if (i->first == median->first) continue;
@@ -152,8 +161,6 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 
 		if(z.size() > 3){
 			median = z[z.size()/2];
-			left_z = vector<p*>(z.begin(), z.end()-z.size()/2-1);
-			right_z = vector<p*>(z.end()-z.size()/2+1, z.end());
 		} else if(z.size() > 2) {
 			KDT.insert(z[1]->first, z[1]->second);
 			KDT.insert(z[0]->first, z[0]->second);
@@ -168,7 +175,14 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 			return;
 		}
 
-
+        for(auto i : z)
+		{
+			if (i->first == median->first) continue;
+			if (i->first[split%3] < median->first[split%3])
+				left_z.push_back(i);
+			else
+				right_z.push_back(i);
+		}
 		for(auto i : x)
 		{
 			if (i->first == median->first) continue;
@@ -191,6 +205,7 @@ void ins(kdtree<3, double, string>& KDT, vector<p*>& x, vector<p*>& y, vector<p*
 
 	if(median)
 		KDT.insert(median->first, median->second);
+    else throw internal_error();
 
 	ins(KDT, left_x, left_y, left_z, split+1);
 	ins(KDT, right_x, right_y, right_z, split+1);
