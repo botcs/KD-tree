@@ -11,13 +11,6 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
-
-//BALANCED INSERTING in O ( kn logn ) time
-		//implementation based on the following article:
-		//Russell A. Brown, Building a Balanced k-d Tree in O(kn log n) Time,
-		//Journal of Computer Graphics Techniques (JCGT), vol. 4, no. 1, 50-68, 2015
-
-
 using c 	= vector<double>;
 using p		= pair<c, string>;
 //BALANCED INSERTING in O ( kn logn ) time
