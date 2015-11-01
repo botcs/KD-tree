@@ -136,9 +136,7 @@ void kdtree<K,KeyType,ValType>::insert(const vector<KeyType>& key, const ValType
 
 		i->split_index = (i->split_index + 1) % K;
 
-		/*
-		 * COMMENT OUT FOR FASTER INSERTION
-		 */
+		
 		depth++;
 
 	}
