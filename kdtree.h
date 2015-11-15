@@ -2,7 +2,7 @@
  * kdtree.h
  *
  *  Created on: 2015. okt. 26.
- *      Author: csabi
+ *      Author: Csaba
  */
 
 #ifndef KDTREE_H_
@@ -15,6 +15,7 @@
 #include <utility>
 #include <queue>
 #include <vector>
+#include <algorithm>
 #include "exceptions.hpp"
 using namespace std;
 
@@ -23,6 +24,7 @@ template <size_t K, class KeyType, class ValType>
 class kdtree
 {
 	size_t dimension = K;
+	size_t _size = 0;
 	struct node
 	{
 		node* parent= NULL;
@@ -45,7 +47,7 @@ class kdtree
 public:
 
 	mutable size_t height = 0;
-
+    size_t size() const{return _size;}
 	class iterator
 	{
 		node * n;
@@ -56,14 +58,119 @@ public:
 		ValType val()	{return n->val;}	//modification doesn't yield invalid tree structure
 	};
 
-
+    void insert(vector< pair < vector<KeyType>, ValType > >& records);
 	void insert(const vector<KeyType>& key, const ValType& val);
+	void _recursiveInserter(vector<vector<pair < vector<KeyType>, ValType >*> >& sortedArrays, size_t split = 0);
 	ostream& print(ostream& o = std::cout) const {_postorder(o, root); return o;}
 	iterator nearest_neighbour(const vector<KeyType>& test_point, ValType val)const;
 	vector<iterator> n_nearest_neighbour( const size_t& n, const vector<KeyType>& test_point, ValType val)const;
 
 
 };
+
+
+template <size_t K, class KeyType, class ValType>
+void kdtree<K,KeyType,ValType>::insert(vector< pair < vector<KeyType>, ValType > >& records)
+{
+    using Record = pair < vector<KeyType>, ValType >;
+
+    vector< vector < Record*> > PresortedArrays(K);
+
+    for (int i=0; i < K; i++)
+    {
+
+        vector < Record*> i_th;
+        for (auto& r : records) {
+            if(r.first.size()!= K) throw invalid_dimension();
+            i_th.push_back(&r);
+        }
+        auto comp = [&](Record* l_val, Record* r_val)
+        {
+            auto j = i;
+            if(!(l_val && r_val)) throw internal_error("NULL");
+            //cycle through K dimensions to find comparable coordinate
+            while(//Test coord equality
+                  !(l_val->first[j%K] < r_val->first[j%K] ||  r_val->first[j%K] < l_val->first[j%K])
+                  //Test bounds
+                  && j<i+K) j++;
+
+            //same points found in array
+            if (j>= i + K) throw duplicate_element();
+
+            return l_val->first[j%K] < r_val->first[j%K];
+        };
+
+        std::sort(i_th.begin(), i_th.end(), comp);
+        PresortedArrays[i] = std::move(i_th);
+    }
+
+
+    _recursiveInserter(PresortedArrays);
+}
+//I <3 Templates
+template <size_t K, class KeyType, class ValType>
+void kdtree<K,KeyType,ValType>::_recursiveInserter(vector<vector<pair < vector<KeyType>, ValType >*> >& sortedArrays,
+                                                    size_t split)
+{
+    if(sortedArrays.size()!= K) throw invalid_dimension();
+
+    using Record = pair < vector<KeyType>, ValType >;
+
+    Record* median = NULL;
+    auto pivot_dim = split%K;
+
+    auto& x = sortedArrays[pivot_dim];
+    if(x.empty()) return;
+    if(x.size() > 3){
+			median = x[x.size()/2];
+		} else if(x.size() > 2) {
+			insert(x[1]->first, x[1]->second);
+			insert(x[0]->first, x[0]->second);
+			insert(x[2]->first, x[2]->second);
+			return;
+		} else if(x.size() > 1){
+			insert(x[1]->first, x[1]->second);
+			insert(x[0]->first, x[0]->second);
+			return;
+		} else {
+			insert(x[0]->first, x[0]->second);
+			return;
+		}
+
+    if(!median) throw internal_error();
+    vector<vector<Record* > > LeftArrays(K), RightArrays(K);
+
+
+
+    for( int i=0; i<K; i++){
+        vector<Record*> L;
+        vector<Record*> R;
+
+
+
+            for(int j = 0; j<sortedArrays[i].size(); j++)
+            {
+                auto& rec = sortedArrays[i][j];
+                if (rec->first == median->first) continue;
+
+                if (rec->first[pivot_dim] < median->first[pivot_dim])
+                    L.push_back(rec);
+                else
+                    R.push_back(rec);
+            }
+
+
+        LeftArrays[i] = std::move(L);
+        RightArrays[i] = std::move(R);
+    }
+
+    if(median)
+		insert(median->first, median->second);
+    else throw internal_error();
+
+    _recursiveInserter( LeftArrays,  split+1);
+	_recursiveInserter(RightArrays, split+1);
+}
 
 template <size_t K, class KeyType, class ValType>
 const KeyType kdtree<K,KeyType,ValType>::sq_distance(const node& X, const node& Y) const
@@ -74,11 +181,9 @@ const KeyType kdtree<K,KeyType,ValType>::sq_distance(const node& X, const node& 
 	if(X.key.size()!=Y.key.size()) throw invalid_dimension();
 	KeyType d=0;
 	for (size_t i = 0; i < X.key.size(); i++){
-		//cout<<X.val<<'\t'<<X.key[i]<<'\t'<<Y.val<<'\t'<<Y.key[i]<<'\n';
 		d+=(X.key[i]-Y.key[i])*(X.key[i]-Y.key[i]);
 	}
 
-	//cout<<X.val<<'\t'<<Y.val<<'\t'<<d<<"\n\n";
 
 	return d;
 }
@@ -119,6 +224,7 @@ void kdtree<K,KeyType,ValType>::insert(const vector<KeyType>& key, const ValType
 	if(key.size() != K)
 		throw invalid_dimension();
 
+    _size++;
 	auto x 	= root;
 	node* par= NULL;
 	auto i= new node(0, key, val);
@@ -136,7 +242,7 @@ void kdtree<K,KeyType,ValType>::insert(const vector<KeyType>& key, const ValType
 
 		i->split_index = (i->split_index + 1) % K;
 
-		
+
 		depth++;
 
 	}
@@ -200,8 +306,6 @@ kdtree<K,KeyType,ValType>::n_nearest_neighbour(const size_t& n, const vector<Key
 				s.push(curr->right);
 
 
-			if(curr->val == query.val)
-				continue;
 
 			auto sq_d = sq_distance(query, *curr);
 			if(q.size()<n)
