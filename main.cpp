@@ -32,12 +32,13 @@ int main() {
 
 
 		cout<<"TEST with large data\n ********************* \n";
-		kdtree<3, double, string> test_bal, test_unbal;
+		kdtree<3, double, string> test_bal, test_unbal, new_test;
 		vector<p> test;
-		for(int i=0; i<200; i++)
-			for(int j=0; j<200; j++)
-				for(int k=0; k<200; k++)
+		for(int i=0; i<20; i++)
+			for(int j=0; j<20; j++)
+				for(int k=0; k<20; k++)
 					test.push_back(p{c{i,j,k}, ""});
+        //test.push_back(p{c{0,0,0}, ""});
 		cout << test.size() <<" POINTS GENERATED\n";
 
 		auto t=clock();
@@ -68,9 +69,15 @@ int main() {
 		cout << "unbalanced insert HEIGHT: " << test_unbal.height << '\n';
 
 
+        t = clock();
+		new_test.insert(test);
+		cout << "new Inserting finished in " << clock() - t << " miliseconds\n";
+        cout << "ITEM COUNT: " << test.size()<<" new_test size: "<< new_test.size()<<'\n';
+		cout << "new insert HEIGHT: " << new_test.height << '\n';
 		//test_unbal.print();
 		//test_bal.print();
 		cout<<" **************************************\n";
+
 
 
 
@@ -81,5 +88,6 @@ int main() {
 	{
 		cout << "HIBA: " << e.what() << endl;
 	}
+
 	return 0;
 }
