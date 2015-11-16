@@ -2,7 +2,7 @@
  * kdtree.h
  *
  *  Created on: 2015. okt. 26.
- *      Author: Csaba
+ *      Author: csabi
  */
 
 #ifndef KDTREE_H_
@@ -55,7 +55,7 @@ public:
 		iterator(node* n): n(n) {}
 		iterator(const iterator & it) : n(it.n) {}
 		const vector<KeyType>& key() const{return n->key;} //modification is not available
-		ValType val()	{return n->val;}	//modification doesn't yield invalid tree structure
+		ValType& val()	{return n->val;}	//modification doesn't yield invalid tree structure
 	};
 
     void insert(vector< pair < vector<KeyType>, ValType > >& records);
@@ -181,9 +181,11 @@ const KeyType kdtree<K,KeyType,ValType>::sq_distance(const node& X, const node& 
 	if(X.key.size()!=Y.key.size()) throw invalid_dimension();
 	KeyType d=0;
 	for (size_t i = 0; i < X.key.size(); i++){
+		//cout<<X.val<<'\t'<<X.key[i]<<'\t'<<Y.val<<'\t'<<Y.key[i]<<'\n';
 		d+=(X.key[i]-Y.key[i])*(X.key[i]-Y.key[i]);
 	}
 
+	//cout<<X.val<<'\t'<<Y.val<<'\t'<<d<<"\n\n";
 
 	return d;
 }
@@ -276,6 +278,7 @@ kdtree<K,KeyType,ValType>::n_nearest_neighbour(const size_t& n, const vector<Key
 	using dist_node=pair<KeyType, node*>;
 	priority_queue<dist_node> q;
 
+    if(n > _size)               throw internal_error("Tobb a lekerdezes mint az elem!");
 	if(test_point.size() != K) 	throw invalid_dimension();
 	if(root == NULL) 			throw empty_tree();
 
