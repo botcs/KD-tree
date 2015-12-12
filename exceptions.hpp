@@ -38,6 +38,12 @@ public:
     const char *what() const throw() { return "Ures a fa, nem ertelmezheto a kereses!"; }
 };
 
+class duplicate_element : public std::exception
+{
+public:
+    const char *what() const throw() { return "Ket egyezo kulcs!"; }
+};
+
 class copy_not_implemented : public std::exception
 {
 public:
